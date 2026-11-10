@@ -1,0 +1,11 @@
+[package]
+name = "vex_quantum_vault"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "vex_quantum_vault"
+
+[dependencies]
+anchor-lang = "0.30.1"
