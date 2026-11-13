@@ -1,10 +1,21 @@
 let unlockedData = null;
+let pendingRequests = new Map();
+let requestId = 0;
 
 chrome.runtime.onInstalled.addListener(() => {
   if (chrome.sidePanel?.setPanelBehavior) {
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
   }
 });
+
+function openApprovalUI() {
+  if (chrome.sidePanel?.open) {
+    chrome.windows.getCurrent({}, (win) => {
+      if (win?.id) chrome.sidePanel.open({ windowId: win.id }).catch(() => {});
+    });
+  }
+  chrome.action.openPopup?.().catch(() => {});
+}
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'SET_UNLOCKED') {
@@ -14,11 +25,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === 'LOCK') {
     unlockedData = null;
+    pendingRequests.clear();
     sendResponse({ ok: true });
     return true;
   }
   if (msg.type === 'CONNECT' || msg.type === 'ETH_REQUEST') {
-    if (!unlockedData || !unlockedData.addrs) {
+    if (!unlockedData?.addrs) {
       sendResponse({ error: 'Wallet locked. Open Vex Wallet and unlock first.' });
       return true;
     }
@@ -28,13 +40,28 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true;
   }
-  if (msg.type === 'SIGN_MESSAGE') {
+  if (msg.type === 'GET_UNLOCKED') {
+    sendResponse({ data: unlockedData });
+    return true;
+  }
+  if (msg.type === 'SIGN_SOLANA' || msg.type === 'SIGN_MESSAGE' || msg.type === 'PERSONAL_SIGN') {
     if (!unlockedData) {
       sendResponse({ error: 'Wallet locked' });
       return true;
     }
-    // Signing pipeline not fully wired yet — returns placeholder
-    sendResponse({ error: 'Message signing not yet available in this build' });
+    const id = ++requestId;
+    pendingRequests.set(id, { msg, sendResponse, ts: Date.now() });
+    openApprovalUI();
+    chrome.runtime.sendMessage({ type: 'PENDING_SIGN', id, request: msg }).catch(() => {});
+    return true;
+  }
+  if (msg.type === 'SIGN_RESULT') {
+    const pending = pendingRequests.get(msg.id);
+    if (pending) {
+      pending.sendResponse(msg.result);
+      pendingRequests.delete(msg.id);
+    }
+    sendResponse({ ok: true });
     return true;
   }
   if (msg.type === 'DISCONNECT') {
@@ -44,3 +71,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   sendResponse({ ok: true });
   return true;
 });
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, p] of pendingRequests) {
+    if (now - p.ts > 120000) {
+      p.sendResponse({ error: 'Request timed out' });
+      pendingRequests.delete(id);
+    }
+  }
+}, 15000);

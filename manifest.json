@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Vex Wallet",
   "short_name": "Vex",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Non-custodial multi-chain wallet. Solana, Ethereum, BNB + quantum-resistant ML-DSA-65 keys. Side panel ready.",
   "author": "Vex",
   "permissions": ["storage", "activeTab", "scripting", "sidePanel"],
