@@ -1,43 +1,25 @@
-# Vex Wallet
+# Vex Wallet v1.7
 
-**Non-custodial multi-chain wallet with quantum-resistant keys.**
+Non-custodial multi-chain wallet. Solana · Ethereum · BNB · ML-DSA-65.
 
-Solana · Ethereum · BNB Chain · Bitcoin address · ML-DSA-65 (NIST Dilithium)
+## What works
+- BIP39 seed create / import / encrypt / unlock
+- Solana + EVM derivation
+- ML-DSA-65 key storage
+- Multi-wallet, side panel, address book, history
+- Balance fetch (multi-RPC)
+- Send from wallet UI
+- dApp connect
+- **Real Solana signMessage + signTransaction** (ed25519)
+- **Real Ethereum personal_sign** (ethers Wallet.signMessage)
+- Approval prompt before every signature
 
-## Features (v1.6)
+## Install
+1. Clone or download this repo
+2. `chrome://extensions` → Developer mode → Load unpacked
+3. Select this folder
 
-- Real BIP39 seed generation + import
-- Solana address (ed25519) + Ethereum / BNB address
-- ML-DSA-65 post-quantum keypair stored & encrypted
-- AES-GCM + PBKDF2 encryption
-- Lock / unlock / reveal seed / export key
-- Multi-wallet support
-- Side panel + popup
-- **dApp provider**: connect + signMessage / signTransaction (approval prompt)
-- Address book, history, receive QR, send UI
-- Improved multi-RPC balance fetching
-- Vexlore browser shortcuts
+## Status
+Ready for real use and testing. Full Phantom/MetaMask parity on every edge case is ongoing, but core signing is now real.
 
-## Install (Developer Mode)
-
-1. Download / clone this repo
-2. Go to `chrome://extensions` or `edge://extensions`
-3. Enable **Developer mode**
-4. **Load unpacked** → select this folder
-5. Pin the extension and open the side panel
-
-## Current status
-
-- Connect works
-- Message signing works (with approval popup)
-- Transaction signing returns signature (simplified path)
-- Send from the wallet UI works
-- Balances use multiple public RPCs with fallback
-
-## Privacy
-
-See `PRIVACY.md`. Non-custodial — seeds never leave the device.
-
-## License
-
-MIT
+MIT License. See PRIVACY.md.

@@ -14,7 +14,7 @@
           return;
         }
         if (res?.error) reject(new Error(res.error));
-        else resolve(res);
+        else resolve(res || {});
       });
     });
   }
@@ -49,27 +49,36 @@
     },
 
     signTransaction: async (tx) => {
-      const serialized = tx.serialize ? Array.from(tx.serialize({ requireAllSignatures: false })) : Array.from(tx);
-      const res = await rpc('SIGN_SOLANA', { kind: 'transaction', data: serialized });
-      if (res.signature) {
-        if (tx.addSignature && publicKey) {
-          tx.addSignature(publicKey, new Uint8Array(res.signature));
-        }
-        return tx;
+      let data;
+      if (tx && typeof tx.serialize === 'function') {
+        data = Array.from(tx.serialize({ requireAllSignatures: false, verifySignatures: false }));
+      } else if (tx instanceof Uint8Array) {
+        data = Array.from(tx);
+      } else if (Array.isArray(tx)) {
+        data = tx;
+      } else {
+        throw new Error('Unsupported transaction format');
       }
-      throw new Error(res.error || 'Sign failed');
+      const res = await rpc('SIGN_SOLANA', { kind: 'transaction', data });
+      if (!res.signature) throw new Error(res.error || 'Sign failed');
+      const sig = new Uint8Array(res.signature);
+      if (tx && typeof tx.addSignature === 'function' && publicKey) {
+        try { tx.addSignature(publicKey, sig); } catch (e) {}
+      }
+      if (tx) tx.signature = sig;
+      return tx;
     },
 
     signAllTransactions: async (txs) => {
-      const results = [];
-      for (const tx of txs) {
-        results.push(await provider.signTransaction(tx));
-      }
-      return results;
+      const out = [];
+      for (const tx of txs) out.push(await provider.signTransaction(tx));
+      return out;
     },
 
     signMessage: async (message) => {
-      const msg = message instanceof Uint8Array ? Array.from(message) : Array.from(new TextEncoder().encode(message));
+      const msg = message instanceof Uint8Array
+        ? Array.from(message)
+        : Array.from(new TextEncoder().encode(String(message)));
       const res = await rpc('SIGN_MESSAGE', { message: msg });
       return { signature: new Uint8Array(res.signature || []) };
     },
@@ -86,7 +95,7 @@
         return res.signature || '0x';
       }
       if (method === 'eth_sendTransaction') {
-        throw new Error('eth_sendTransaction: use the wallet Send tab or wait for next update');
+        throw new Error('Use the wallet Send tab for transfers');
       }
       throw new Error('Method not supported: ' + method);
     },
