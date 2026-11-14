@@ -1,25 +1,38 @@
-# Vex Wallet v1.7
+# Vex Wallet v1.8
 
 Non-custodial multi-chain wallet. Solana · Ethereum · BNB · ML-DSA-65.
 
 ## What works
 - BIP39 seed create / import / encrypt / unlock
 - Solana + EVM derivation
-- ML-DSA-65 key storage
-- Multi-wallet, side panel, address book, history
-- Balance fetch (multi-RPC)
+- ML-DSA-65 quantum key storage
+- Multi-wallet, side panel, neon dashboard UI
+- Balance fetch (fixed BigInt handling, multi-RPC)
 - Send from wallet UI
-- dApp connect
-- **Real Solana signMessage + signTransaction** (ed25519)
-- **Real Ethereum personal_sign** (ethers Wallet.signMessage)
-- Approval prompt before every signature
+- dApp connect + real Solana signMessage / signTransaction
+- Real Ethereum personal_sign
+- Approval prompt before signatures
 
-## Install
-1. Clone or download this repo
-2. `chrome://extensions` → Developer mode → Load unpacked
-3. Select this folder
+## Install (Developer)
+1. Unzip this package
+2. `chrome://extensions` or `edge://extensions` → Developer mode
+3. Load unpacked → select this folder
+
+## Chrome Web Store / Edge Add-ons Submission
+
+1. Zip this entire folder (no parent folder)
+2. Chrome: [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+3. Edge: [Microsoft Partner Center](https://partner.microsoft.com/dashboard/microsoftedge/overview)
+4. Upload the zip
+5. Privacy policy: paste contents of `PRIVACY.md`
+6. Screenshots: take 3–5 of the dashboard, send, receive, unlock screens
+7. Description: use the short description from `manifest.json`
+8. Permissions justification:
+   - storage: encrypted wallet data
+   - activeTab / scripting: inject provider into dApps
+   - host permissions: connect to dApps and RPCs
 
 ## Status
-Ready for real use and testing. Full Phantom/MetaMask parity on every edge case is ongoing, but core signing is now real.
+Core wallet is functional for real use. Full edge-case Phantom parity is ongoing.
 
 MIT License. See PRIVACY.md.
